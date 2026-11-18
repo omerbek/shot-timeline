@@ -9,3 +9,13 @@ Sekiz saniyelik özgün sekansın üç planını kare zamanlarıyla incele.
 ## İlham kaynağı
 
 Bu bağımsız sahne sentetik su istasyonu örnekleri kullanır. [Kaynak proje](https://github.com/JuneYaooo/rea-video).
+
+## Video kesit analizi
+
+Python 3 ve PATH üzerinde FFmpeg gerekir. Ani görüntü geçişleri için eşik değerini 0–1 aralığında ayarla. Yumuşak geçişlerde sonuçlar eşik ve görüntü içeriğine bağlıdır.
+
+```sh
+python analyze.py input.mp4 -o cuts.json --threshold 0.30
+```
+
+Sekiz saniyelik zaman çizelgesinden bir kare seçip **PNG indir** ile 720 × 405 piksel dışa aktarabilirsin.
