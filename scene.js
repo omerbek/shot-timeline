@@ -80,4 +80,11 @@ seek.addEventListener('input', () => {
   draw();
 });
 
+document.querySelector('#save').addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.download = 'shot-timeline.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+
 draw();
