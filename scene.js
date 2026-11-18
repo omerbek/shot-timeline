@@ -30,11 +30,11 @@ function render(t) {
   const cuts = [0, 2, 5, 8];
   const plan = cuts.findIndex((cut, i) => i > 0 && t < cut) - 1;
   const active = plan < 0 ? 2 : plan;
-  ['İstasyon', 'Akış', 'Ölçüm'].forEach((name, i) => {
+  [translate('İstasyon'), translate('Akış'), translate('Ölçüm')].forEach((name, i) => {
     const x = 48 + 211 * i;
     rect(x, 145, 198, 110, i === active ? '#26564f' : '#22313a');
     label(name, x + 14, 204);
-    label(`Kare ${cuts[i] * 30}`, x, 285, 17);
+    label(`${translate('Kare')} ${cuts[i] * 30}`, x, 285, 17);
   });
   rect(48, 312, 620, 3, '#40535a');
   dot(48 + t / 8 * 620, 314, 7, amber);
@@ -52,7 +52,7 @@ function draw() {
   rect(0, 0, canvas.width, canvas.height, ink);
   render(position);
   seek.value = position;
-  time.value = `${position.toFixed(2)} sn`;
+  time.value = `${position.toFixed(2)} ${language === 'en' ? 's' : 'sn'}`;
 }
 
 function frame(timestamp) {
@@ -65,7 +65,7 @@ function frame(timestamp) {
 
 play.addEventListener('click', () => {
   playing = !playing;
-  play.textContent = playing ? 'Duraklat' : 'Oynat';
+  updatePlaybackLabel();
   if (playing) {
     previous = null;
     animationId = requestAnimationFrame(frame);
@@ -87,4 +87,38 @@ document.querySelector('#save').addEventListener('click', () => {
   link.click();
 });
 
-draw();
+const copy = {"title": ["Planlara ayırma", "Shot Timeline"], "description": ["Sekiz saniyelik özgün sekansın üç planını kare zamanlarıyla incele.", "Find abrupt scene changes in a video and export their timestamps as JSON."], "preview": ["Seçili hareket deneyinin önizlemesi", "Animation preview"], "timeline": ["Zaman çizelgesi", "Timeline"], "settings": ["Sahne ayarları", "Scene settings"], "save": ["PNG indir", "Download PNG"], "cli": ["Dosyalarla çalışmak için analyze.py komutunu kullan. Örnekler README içinde.", "Use analyze.py for local files. See the repository README for examples."]};
+const dictionary = {"Debi": "Flow", "ÇIKIŞ DEBİSİ": "OUTLET FLOW", "Normal çalışma": "Operating normally", "Ölçüm birimi görünür": "Unit is visible", "Durum etiketi okunur": "Status label is legible", "Geçiş sekiz saniyeye sığar": "Transition fits in eight seconds", "SU AKIŞI": "WATER FLOW", "Yalova · Su istasyonu": "Yalova · Water station", "İstasyon": "Station", "Komut": "Prompt", "Tohum": "Seed", "Örnekle": "Sample", "Çıktı": "Output", "Suyu sarı bir uyarı çizgisiyle anlat.": "Show the water as a yellow alert line.", "Akışı camgöbeği bir dalgaya dönüştür.": "Turn the flow into a cyan wave.", "Veriyi noktalardan oluşan bir haritaya işle.": "Map the data as a field of dots.", "Akış": "Flow", "Ölçüm": "Reading", "Mavi saat": "Blue hour", "Bakır günbatımı": "Copper sunset", "Yeşil şafak": "Green dawn", "Kare": "Frame", "Oynat": "Play", "Duraklat": "Pause"};
+const fieldDefaults = {};
+let language = 'tr';
+function translate(value) {
+  return language === 'en' ? (Object.hasOwn(dictionary, value) ? dictionary[value] : value) : value;
+}
+function updatePlaybackLabel() {
+  play.textContent = translate(playing ? 'Duraklat' : 'Oynat');
+}
+function setLanguage(next) {
+  const previousLanguage = language;
+  language = next;
+  document.documentElement.lang = next;
+  const index = next === 'en' ? 1 : 0;
+  document.title = copy.title[index];
+  for (const item of document.querySelectorAll('[data-i18n]')) item.textContent = copy[item.dataset.i18n][index];
+  for (const item of document.querySelectorAll('[data-i18n-label]')) item.setAttribute('aria-label', copy[item.dataset.i18nLabel][index]);
+  for (const code of ['tr', 'en']) document.querySelector('#lang-' + code).setAttribute('aria-pressed', String(code === next));
+  if (previousLanguage !== next) {
+    for (const field of document.querySelectorAll('#settings input[type="text"]')) {
+      const original = field.defaultValue;
+      const english = Object.hasOwn(fieldDefaults, original) ? fieldDefaults[original] : original;
+      if (field.value === (previousLanguage === 'en' ? english : original)) {
+        field.value = next === 'en' ? english : original;
+        field.dispatchEvent(new Event('input'));
+      }
+    }
+  }
+  updatePlaybackLabel();
+  draw();
+}
+for (const code of ['tr', 'en']) document.querySelector('#lang-' + code).addEventListener('click', () => setLanguage(code));
+
+setLanguage('tr');
